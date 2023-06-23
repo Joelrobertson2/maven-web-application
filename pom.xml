@@ -107,7 +107,7 @@
 	</distributionManagement>
 	
 	<build>
-		<finalName>Todays-WEB-APP</finalName>
+		<finalName>Todays-WEB-APPs</finalName>
 		
 		<plugins>
 			<plugin>
