@@ -1,0 +1,44 @@
+node {
+
+def mavenHome = tool name: 'maven3.9.2'
+stage('1Clone'){
+//option: under pipeline syntax select git:GIT
+git 'https://github.com/Joelrobertson2/maven-web-application.git '
+
+//Below groovy script in Jenkins, under repo, generate a Pipeline syntax for credential authorization,
+//if you are are cloning from a private repo. 
+//Under pipeline syntax & repo in Jenkins, add the branch (development or staging if your 
+//intention is to pull from development or staging branchrespectively)
+//copy the generated  code below and comment out the git repo command above which is 
+//only appropriate for public repos not needing credential authentication
+
+//git branch: 'develpoment', credentialsId: '98bb2769-4a09-4893-a1eb-89fc76575f4a', url: 'https://github.com/Joelrobertson2/maven-web-application.git'
+}
+
+stage('2Test&Build'){
+sh "${mavenHome}/bin/mvn clean package"
+}
+stage('3CodeQualityAnalysis'){
+    sh "${mavenHome}/bin/mvn sonar:sonar"
+}
+stage('4UploadArtifacts'){
+    //pom.xml for repo details found in project & settings.xml [nexus server login details]found in maven conf on jenkins server
+    //ls /var/lib/jenkins/tools/hud/maven3.9.2/conf/settings.xml
+    sh "${mavenHome}/bin/mvn deploy"
+}
+
+stage('5Deploy'){
+    //must install/update and use deploy to container pluging from jekins pipeline syntax
+    //target/*war
+    deploy adapters: [tomcat9(credentialsId: 'Tomcat', path: '', url: 'http://18.212.185.227:8080/')], contextPath: null, war: 'target/*war'
+}
+
+stage('6Notification'){
+    //email notification
+    //generate from pipline syntax
+emailext body: '''Hi Team, 
+Build Status..
+Joel''', recipientProviders: [contributor()], subject: 'build Staus', to: 'developers'
+}
+
+}
